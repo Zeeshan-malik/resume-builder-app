@@ -15,10 +15,9 @@ router.post(
 
     // Check if a user with this email already exists
     const userExists = await User.findOne({ email });
-    if (userExists) {
-      res.status(400);
-      throw new Error('User already exists');
-    }
+  if (userExists) {
+  return res.status(400).json({ message: 'User already exists' });
+}
 
     // Create a new user in the database
     const user = await User.create({ name, email, password });
@@ -45,8 +44,8 @@ router.post(
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    // Check if the user exists and the password matches
     const user = await User.findOne({ email });
+
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -55,10 +54,10 @@ router.post(
         token: generateToken(user._id),
       });
     } else {
-      res.status(401);
-      throw new Error('Invalid email or password');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
   })
 );
+
 
 module.exports = router;
