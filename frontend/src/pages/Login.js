@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState('error');
+
+  const { user, loginUser } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -31,13 +42,11 @@ const Login = () => {
         config
       );
 
-      setMessage('Login successful!');
+      loginUser(data);
+
+      setMessage('Login successful! Redirecting...');
       setMessageType('success');
       
-      // Store user data and token in local storage or state
-      // We will implement this in the next step
-      console.log(data);
-
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setMessage(error.response.data.message);

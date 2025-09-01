@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -9,15 +11,17 @@ const Register = () => {
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState('error');
 
+  const { user, loginUser } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    // Frontend validation
-    if (!name || !email || !password || !confirmPassword) {
-      setMessage('All fields are required.');
-      setMessageType('error');
-      return;
-    }
 
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
@@ -32,19 +36,17 @@ const Register = () => {
           },
         };
 
-        await axios.post(
+        const { data } = await axios.post(
           '/api/users/register',
           { name, email, password },
           config
         );
 
-        setMessage('Registration successful! You can now log in.');
-        setMessageType('success');
-        setName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        loginUser(data);
 
+        setMessage('Registration successful! Redirecting...');
+        setMessageType('success');
+        
       } catch (error) {
         if (error.response && error.response.data && error.response.data.message) {
           setMessage(error.response.data.message);
